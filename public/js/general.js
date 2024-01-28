@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	const deleteButtons = document.getElementsByClassName('delete-button');
 	for (const deleteButton of deleteButtons) {
 		deleteButton.onclick = function () {
-			return confirm('{{ __("Sigur vrei sa stergi?") }}');
+			return confirm("Confirm?");
 		}
 	};
 }, false);

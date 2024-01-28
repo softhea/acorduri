@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\ChordHelper;
 use App\Models\Artist;
+use App\Models\ChordTab;
 use App\Models\Tab;
 use App\Http\Requests\StoreTabRequest;
 use App\Http\Requests\UpdateTabRequest;
@@ -55,9 +56,7 @@ class TabController extends Controller
     {
         $tab = Tab::query()->create($request->validated());
 
-        // todo artist no_of_tabs
-
-        $chordService->assignChordsToTab($tab->id, $tab->text);
+        $chordService->assignChordsToTab($tab);
 
         return redirect()
             ->route('tabs.index')
@@ -104,13 +103,24 @@ class TabController extends Controller
     public function update(UpdateTabRequest $request, Tab $tab, ChordService $chordService)
     {
         $oldText = $tab->text;
-
-        $tab->update($request->validated());
+        $oldArtistId = (int) $tab->artist_id;
         
-        //todo update artist no_of_tabs
+        $tab->update($request->validated());
 
-        $chordService->assignChordsToTab($tab->id, $tab->text, $oldText);
+        if ($oldArtistId !== (int) $request->validated('artist_id')) {
+            $artist = Artist::query()->find($oldArtistId);
+            $artist->no_of_tabs--;
+            $artist->save();
 
+            $artist = Artist::query()->find((int) $request->validated('artist_id'));
+            $artist->no_of_tabs++;
+            $artist->save();
+        }
+
+        if ($oldText !== $request->validated('text')) {
+            $chordService->assignChordsToTab($tab, $oldText);
+        }
+        
         return redirect()
             ->route('tabs.index')
             ->with("message", __("Tabulatura a fost modificata cu succes"));
@@ -136,6 +146,15 @@ class TabController extends Controller
             $loggedUser->save();
         }
         
+        if ($tab->chords->count() > 0) {
+            foreach ($tab->chords as $chord) {
+                $chord->no_of_tabs--;
+            }
+            $tab->push();
+
+            ChordTab::query()->where('tab_id', $tab->id)->delete();
+        }
+
         $tab->delete();
 
         return redirect()

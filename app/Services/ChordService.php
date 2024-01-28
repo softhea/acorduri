@@ -10,9 +10,11 @@ use App\Models\Tab;
 
 class ChordService
 {
-    public function assignChordsToTab(int $tabId, string $newText, ?string $oldText = null): void
+    public function assignChordsToTab(Tab $tab, ?string $oldText = null): void
 	{
 		$noOfChords = 0;
+
+        $newText = $tab->text;
 
         $newText = str_replace(' ', '&nbsp;', $newText);
         if (null !== $oldText) {
@@ -45,7 +47,7 @@ class ChordService
                     )
                 ) {
 					$chordTab = new ChordTab();
-					$chordTab->tab_id = $tabId;
+					$chordTab->tab_id = $tab->Id;
 					$chordTab->chord_id = $chord->id;
 					$chordTab->save();
 
@@ -58,7 +60,7 @@ class ChordService
                 && preg_match('/\$' . $chord->chord . '/', $oldText)
             ) {
 				$chordToTab = ChordTab::query()
-                    ->where('tab_id', $tabId)
+                    ->where('tab_id', $tab->id)
                     ->where('chord_id', $chord->id)
                     ->first();
 				$chordToTab->delete();
@@ -68,7 +70,6 @@ class ChordService
 			}
 		}
 
-		$tab = Tab::find($tabId);
         $tab->no_of_chords = $noOfChords;
         $tab->save();
 	}
