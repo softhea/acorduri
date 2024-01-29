@@ -12,6 +12,7 @@ use App\Http\Requests\StoreTabRequest;
 use App\Http\Requests\UpdateTabRequest;
 use App\Models\User;
 use App\Services\ChordService;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -22,9 +23,22 @@ class TabController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->input("search");
+        $search = trim((string) $request->input("search", ""));
+        $searchName = trim((string) $request->input("name", ""));
+        $searchUserId = (int) $request->input("user_id");
+        $searchArtistId = (int) $request->input("user_id");
+        $searchNoOfChords = (int) $request->input("no_of_chords");
+        $searchChords = trim((string) $request->input("no_of_chords", ""));
 
-        $tabs = Tab::query()->where('is_active', true)->get();
+        $tabs = Tab::query()->where('is_active', true);
+        if ("" !== $search) {
+            $tabs = $tabs->where(function (Builder $query) use ($search) {
+                $query->where("name", "LIKE", "%" . $search . "%");
+                // $query->orWhere("username", "LIKE", "%" . $search . "%");
+            });    
+        }
+        $tabs = $tabs->get();
+
         $chords = [];
         foreach ($tabs as $tab) {
             foreach ($tab->chords as $chord) {
@@ -35,7 +49,16 @@ class TabController extends Controller
 
         return view(
             'tabs.index', 
-            compact('tabs', 'chords', 'search')
+            compact(
+                'tabs', 
+                'chords', 
+                'search',
+                'searchName',
+                'searchUserId',
+                'searchArtistId',
+                'searchNoOfChords',
+                'searchChords'
+            )
         );
     }
 
@@ -56,6 +79,21 @@ class TabController extends Controller
     {
         $tab = Tab::query()->create($request->validated());
 
+        $push = false;
+        if (null !== $tab->artist_id) {
+            $tab->artist->no_of_tabs++;
+
+            $push = true;
+        }
+        if (null !== $tab->user_id) {
+            $tab->user->no_of_tabs++;
+
+            $push = true;
+        }
+        if ($push) {
+            $tab->push();
+        }
+
         $chordService->assignChordsToTab($tab);
 
         return redirect()
@@ -71,11 +109,20 @@ class TabController extends Controller
         $tab->no_of_views++;
 		$tab->save();
 
+        $push = false;
         if (null !== $tab->artist_id) {
             $tab->artist->no_of_views++;
+
+            $push = true;
         }
-		$tab->user->no_of_views++;		
-		$tab->push();
+        if (null !== $tab->user_id) {
+		    $tab->user->no_of_views++;		
+		    
+            $push = true;
+        }
+        if ($push) {
+            $tab->push();
+        }
         
         if (null !== $tab->text) {
             $chords = $tab->chords()->get()->toArray();
@@ -105,16 +152,21 @@ class TabController extends Controller
         $oldText = $tab->text;
         $oldArtistId = (int) $tab->artist_id;
         
+        if (
+            $oldArtistId !== (int) $request->validated('artist_id')
+            && $tab->artist->no_of_tabs > 0
+        ) {
+            $tab->artist->no_of_tabs--;
+
+            $tab->push();
+        }
+
         $tab->update($request->validated());
 
         if ($oldArtistId !== (int) $request->validated('artist_id')) {
-            $artist = Artist::query()->find($oldArtistId);
-            $artist->no_of_tabs--;
-            $artist->save();
-
-            $artist = Artist::query()->find((int) $request->validated('artist_id'));
-            $artist->no_of_tabs++;
-            $artist->save();
+            $tab->artist->no_of_tabs++;
+        
+            $tab->push();
         }
 
         if ($oldText !== $request->validated('text')) {
@@ -131,28 +183,40 @@ class TabController extends Controller
      */
     public function destroy(Tab $tab)
     {
-        if (null !== $tab->artist_id) {
-            $artist = Artist::query()->find((int) $tab->artist_id);
-            if ($artist->no_of_tabs > 0) {
-                $artist->no_of_tabs--;
-                $artist->save();
-            }
+        $push = false;
+
+        if (
+            null !== $tab->artist_id
+            && $tab->artist->no_of_tabs > 0
+        ) {
+            $tab->artist->no_of_tabs--;
+
+            $push = true;
         }
         
-        /** @var User $loggedUser */
-        $loggedUser = Auth::user();
-        if ($loggedUser->no_of_tabs > 0) {
-            $loggedUser->no_of_tabs--;
-            $loggedUser->save();
+        if (
+            null !== $tab->user_id
+            && $tab->user->no_of_tabs > 0
+        ) {
+            $tab->user->no_of_tabs--;
+            
+            $push = true;
         }
-        
+
         if ($tab->chords->count() > 0) {
             foreach ($tab->chords as $chord) {
-                $chord->no_of_tabs--;
+                if ($chord->no_of_tabs > 0) {
+                    $chord->no_of_tabs--;
+                }
             }
-            $tab->push();
+            
+            $push = true;
 
             ChordTab::query()->where('tab_id', $tab->id)->delete();
+        }
+
+        if ($push) {
+            $tab->push();
         }
 
         $tab->delete();

@@ -19,7 +19,6 @@ class UserController extends Controller
             $users = $users->where(function (Builder $query) use ($search) {
                 $query->where("name", "LIKE", "%" . $search . "%");
                 $query->orWhere("username", "LIKE", "%" . $search . "%");
-                // $query->orWhere("email", "LIKE", "%" . $search . "%");
             });    
         }
         $users = $users->get();

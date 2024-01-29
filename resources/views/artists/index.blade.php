@@ -13,14 +13,16 @@
 	<a href="{{ route('artists.create') }}" class="btn btn-primary">{{ __('Adauga') }}</a>
 @endif
 
-<form class="form-inline" action="" method="GET">
-	<div class="form-group mx-sm-3 mb-2">
-		<input type="text" class="form-control" name="search" value="<?=$search?>">
+<form class="form-inline mt-2" action="" method="GET">
+	<div class="row">
+		<div class="form-group col-11">
+			<input type="text" class="form-control" name="search" value="<?=$search?>">
+		</div>
+		<button type="submit" class="btn btn-primary col-1">{{ __('Cauta') }}</button>
 	</div>
-	<button type="submit" class="btn btn-primary mb-2">{{ __('Cauta') }}</button>
 </form>
 
-<table class="table table-striped">
+<table class="table table-striped mt-2">
 	<thead>
 		<tr>
 			<th>{{ __('Artist') }}</th>       

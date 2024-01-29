@@ -13,11 +13,13 @@
 	<a href="{{ route('tabs.create') }}" class="btn btn-primary">{{ __('Adauga') }}</a>
 @endif
 
-<form class="form-inline" action="" method="GET">
-	<div class="form-group mx-sm-3 mb-2">
-		<input type="text" class="form-control" name="search" value="<?=$search?>">
+<form class="form-inline mt-2" action="" method="GET">
+	<div class="row">
+		<div class="form-group col-11">
+			<input type="text" class="form-control" name="search" value="<?=$search?>">
+		</div>
+		<button type="submit" class="btn btn-primary col-1">{{ __('Cauta') }}</button>
 	</div>
-	<button type="submit" class="btn btn-primary mb-2">{{ __('Cauta') }}</button>
 </form>
 
 @foreach ($chords as $chord)
@@ -26,7 +28,7 @@
 	</div>
 @endforeach
 
-<table class="table table-striped">
+<table class="table table-striped mt-2">
 	<thead>
 		<tr>
 			<th>{{ __('Melodie') }}</th>
@@ -36,6 +38,16 @@
 			<th>{{ __('Numar de acorduri') }}</th>        
 			<th>{{ __('Vizualizari') }}</th> 
 		</tr>
+		<tr>
+			<form action="" method="GET">
+				<th><input type="text" name="name" class="form-control" value="<?=$searchName?>"></th>
+				<th><input type="text" name="artist_id" class="form-control" value="<?=$searchArtistId?>"></th>
+				<th><input type="text" name="user_id" class="form-control" value="<?=$searchUserId?>"></th>
+				<th><input type="text" name="chords" class="form-control" value="<?=$searchChords?>"></th>
+				<th><input type="text" name="no_of_chords" id="search_no_of_chords" class="form-control" value="<?=$searchNoOfChords?>"></th>      
+				<th><button class="btn btn-success" type="submit">{{ __('Cauta') }}</button></th>
+			</form>
+    	</tr>
 	</thead>
 	<tbody>
 		@foreach ($tabs as $tab)

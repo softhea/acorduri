@@ -47,7 +47,7 @@ class ChordService
                     )
                 ) {
 					$chordTab = new ChordTab();
-					$chordTab->tab_id = $tab->Id;
+					$chordTab->tab_id = $tab->id;
 					$chordTab->chord_id = $chord->id;
 					$chordTab->save();
 
