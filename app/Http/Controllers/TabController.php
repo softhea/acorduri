@@ -10,11 +10,9 @@ use App\Models\ChordTab;
 use App\Models\Tab;
 use App\Http\Requests\StoreTabRequest;
 use App\Http\Requests\UpdateTabRequest;
-use App\Models\User;
 use App\Services\ChordService;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class TabController extends Controller
 {
@@ -33,7 +31,7 @@ class TabController extends Controller
         $tabs = Tab::query()->where('is_active', true);
         if ("" !== $search) {
             $tabs = $tabs->where(function (Builder $query) use ($search) {
-                $query->where("name", "LIKE", "%" . $search . "%");
+                $query->whereFullText("name", $search);
                 // $query->orWhere("username", "LIKE", "%" . $search . "%");
             });    
         }
