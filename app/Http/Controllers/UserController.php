@@ -12,13 +12,14 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $search = trim((string) $request->input("search", ""));
+        $search = $request->input("search");
 
-        $users = User::query()->whereNotNull('email_verified_at');
+        /** @var Builder $users */
+        $users = User::onlyActive();
         if ("" !== $search) {
             $users = $users->where(function (Builder $query) use ($search) {
-                $query->where("name", "LIKE", "%" . $search . "%");
-                $query->orWhere("username", "LIKE", "%" . $search . "%");
+                $query->where(User::COLUMN_NAME, "LIKE", "%" . $search . "%");
+                $query->orWhere(User::COLUMN_USERNAME, "LIKE", "%" . $search . "%");
             });    
         }
         $users = $users->get();

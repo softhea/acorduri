@@ -14,23 +14,24 @@ class ChordService
 	{
 		$noOfChords = 0;
 
-        $newText = $tab->text;
+        $newText = $tab->getText();
 
         $newText = str_replace(' ', '&nbsp;', $newText);
         if (null !== $oldText) {
             $oldText = str_replace(' ', '&nbsp;', $oldText);
         }
 
+        /** @var Chord[] $chords */
 		$chords = Chord::all();
 		foreach ($chords as $chord) {
             if (
                 false !== strpos(
                     $newText, 
-                    '$' . $chord->chord . '&nbsp;'
+                    '$' . $chord->getChord() . '&nbsp;'
                 ) 
                 || false !== strpos(
                     $newText, 
-                    '$' . $chord->chord . "\r\n"
+                    '$' . $chord->getChord() . "\r\n"
                 )
             ) {
 				if (
@@ -38,39 +39,39 @@ class ChordService
                     || (
                         false === strpos(
                             $oldText, 
-                            '$' . $chord->chord . '&nbsp;'
+                            '$' . $chord->getChord() . '&nbsp;'
                         ) 
                         && false === strpos(
                             $oldText, 
-                            '$' . $chord->chord . "\r\n"
+                            '$' . $chord->getChord() . "\r\n"
                         )                        
                     )
                 ) {
 					$chordTab = new ChordTab();
-					$chordTab->tab_id = $tab->id;
-					$chordTab->chord_id = $chord->id;
+					$chordTab->setTabId($tab->getId());
+					$chordTab->setChordId($chord->getId());
 					$chordTab->save();
 
-					$chord->no_of_tabs++;
-					$chord->save();
+                    if ($tab->isActive()) {
+                        $chord->increaseNoOfTabs();
+                    }
 				}
 				$noOfChords++;
 			} elseif (
                 null !== $oldText
-                && preg_match('/\$' . $chord->chord . '/', $oldText)
+                && preg_match('/\$' . $chord->getChord() . '/', $oldText)
             ) {
-				$chordToTab = ChordTab::query()
-                    ->where('tab_id', $tab->id)
-                    ->where('chord_id', $chord->id)
-                    ->first();
-				$chordToTab->delete();
+				ChordTab::query()
+                    ->where(ChordTab::COLUMN_TAB_ID, $tab->getId())
+                    ->where(ChordTab::COLUMN_CHORD_ID, $chord->getId())
+                    ->delete();
 
-                $chord->no_of_tabs--;
-				$chord->save();			
+                if ($tab->isActive()) {
+                    $chord->decreaseNoOfTabs();
+                }
 			}
 		}
 
-        $tab->no_of_chords = $noOfChords;
-        $tab->save();
+        $tab->updateNoOfChords($noOfChords);
 	}
 }

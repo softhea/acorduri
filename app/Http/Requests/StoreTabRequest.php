@@ -2,6 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Artist;
+use App\Models\Tab;
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
@@ -22,22 +25,26 @@ class StoreTabRequest extends FormRequest
      */
     public function rules(): array
     {
+        /** @var User $loggedUser */
+        $loggedUser = Auth::user();
+
         $this->merge([
-            'user_id' => Auth::id(),
-            'is_active' => Auth::user()->role_id <= 2,
+            Tab::COLUMN_USER_ID => Auth::id(),
+            Tab::COLUMN_IS_ACTIVE => $loggedUser->isActive(),
         ]);
 
         $exists = "";
         if (null !== $this->request->get('artist_id')) {
-            $exists = "|exists:artists,id";
+            $exists = "|exists:" . Artist::TABLE . "," . Artist::COLUMN_ID;
         }
 
         return [
-            'name' => 'required|unique:tabs,name', // todo per artist_id
-            'artist_id' => 'sometimes' . $exists,
-            'text' => 'required',
-            'is_active' => 'required',
-            'user_id' => 'required',
+            // todo per artist_id
+            Tab::COLUMN_NAME => 'required|unique:' . Tab::TABLE . ',' . Tab::COLUMN_NAME, 
+            Tab::COLUMN_ARTIST_ID => 'sometimes' . $exists,
+            Tab::COLUMN_TEXT => 'required',
+            Tab::COLUMN_IS_ACTIVE => 'required',
+            Tab::COLUMN_USER_ID => 'required',
         ];
     }
 }

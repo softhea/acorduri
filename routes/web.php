@@ -25,12 +25,13 @@ Route::get('/', function () {
 Route::resource('/tabulaturi', TabController::class)
     ->names('tabs')
     ->parameters(['tabulaturi' => 'tab']);
+
 Route::resource('/artisti', ArtistController::class)
     ->names('artists')
     ->parameters(['artisti' => 'artist']);
-Route::resource('/acorduri', ChordController::class)
-    ->names('chords')
-    ->parameters(['acorduri' => 'chord']);
+
+Route::get('/acorduri', [ChordController::class, 'index'])->name('chords.index');
+Route::get('/acorduri/{chord}', [ChordController::class, 'show'])->name('chords.show');
 
 Route::get('/utilizatori', [UserController::class, 'index'])->name('users.index');
 Route::get('/utilizatori/{user}', [UserController::class, 'show'])->name('users.show');

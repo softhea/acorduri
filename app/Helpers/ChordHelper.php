@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Helpers;
 
+use App\Models\Chord;
+use Illuminate\Database\Eloquent\Collection;
+
 class ChordHelper
 {	
 	private static int $i = 1;
@@ -24,40 +27,43 @@ class ChordHelper
 		return substr_replace($haystack, $replace, $pos, strlen($needle));
 	}  
 
-	private static function chord(array $chord): string
+	private static function chord(Chord $chord): string
 	{			
 		$string = 
 			'<a href="' 
-				. route('chords.show', ['chord' => $chord['id']])
-				. '" class="chord" chord_id="chord_' . $chord['chord'] 
+				. route('chords.show', ['chord' => $chord->getId()])
+				. '" class="chord" chord_id="chord_' . $chord->getChord()
 			. '" >' 
-				. $chord['chord'] 
+				. $chord->getChord()
 			. '</a>';
 
 		return $string; 
 	}
 
-	public static function showChords(string $string, array $chords): string
+	/**
+	 * @param Collection<int, Chord> $chords
+	 */
+	public static function showChords(string $string, Collection $chords): string
 	{
 		$string = str_replace(' ', '&nbsp;', $string);
 		foreach ($chords as $chord) {		
 			while (
 				false !== strpos(
 					$string, 
-					'$' . $chord['chord'] . '&nbsp;'
+					'$' . $chord->getChord() . '&nbsp;'
 				) 
 				|| false !== strpos(
 					$string, 
-					'$' . $chord['chord'] . "\r\n"
+					'$' . $chord->getChord() . "\r\n"
 				)
 			) {
 				$string = self::strReplaceOnce(
-					'$' . $chord['chord'] . '&nbsp;', 
+					'$' . $chord->getChord() . '&nbsp;', 
 					'&nbsp' . self::chord($chord) . '&nbsp;', 
 					$string
 				);
 				$string = self::strReplaceOnce(
-					'$' . $chord['chord'] . "\r\n", 
+					'$' . $chord->getChord() . "\r\n", 
 					'&nbsp' . self::chord($chord) . "\r\n", 
 					$string
 				);				

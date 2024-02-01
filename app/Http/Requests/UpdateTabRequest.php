@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Artist;
+use App\Models\Tab;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -22,26 +24,20 @@ class UpdateTabRequest extends FormRequest
      */
     public function rules(): array
     {
-        // $this->merge([
-        //     'user_id' => Auth::id(),
-        //     'is_active' => Auth::user()->role_id <= 2,
-        // ]);
-
         $exists = "";
         if (null !== $this->request->get('artist_id')) {
-            $exists = "|exists:artists,id";
+            $exists = "|exists:" . Artist::TABLE . "," . Artist::COLUMN_ID;
         }
 
         return [
-            'name' => [
+            Tab::COLUMN_NAME => [
                 'required',
-                Rule::unique('tabs', 'name')->ignore($this->route('tab')),
                 //todo per artist
+                Rule::unique(Tab::TABLE, Tab::COLUMN_NAME)
+                    ->ignore($this->route('tab')),
             ],
-            'artist_id' => 'sometimes' . $exists,
-            'text' => 'required',
-            // 'is_active' => 'required',
-            // 'user_id' => 'required',
+            Tab::COLUMN_ARTIST_ID => 'sometimes' . $exists,
+            Tab::COLUMN_TEXT => 'required',
         ];
     }
 }

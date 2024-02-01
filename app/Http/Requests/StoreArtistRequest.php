@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Artist;
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
@@ -22,15 +24,18 @@ class StoreArtistRequest extends FormRequest
      */
     public function rules(): array
     {
+        /** @var User $loggedUser */
+        $loggedUser = Auth::user();
+
         $this->merge([
-            'user_id' => Auth::id(),
-            'is_active' => Auth::user()->role_id <= 2,
+            Artist::COLUMN_USER_ID => Auth::id(),
+            Artist::COLUMN_IS_ACTIVE => $loggedUser->isAdmin(),
         ]);
 
         return [
-            'name' => 'required|unique:artists,name',
-            'user_id' => 'required',
-            'is_active' => 'required',
+            Artist::COLUMN_NAME => 'required|unique:' . Artist::TABLE . ',' . Artist::COLUMN_NAME,
+            Artist::COLUMN_USER_ID => 'required',
+            Artist::COLUMN_IS_ACTIVE => 'required',
         ];
     }
 }

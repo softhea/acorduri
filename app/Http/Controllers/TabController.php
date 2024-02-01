@@ -10,47 +10,63 @@ use App\Models\ChordTab;
 use App\Models\Tab;
 use App\Http\Requests\StoreTabRequest;
 use App\Http\Requests\UpdateTabRequest;
+use App\Models\User;
 use App\Services\ChordService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class TabController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
-        $search = trim((string) $request->input("search", ""));
-        $searchName = trim((string) $request->input("name", ""));
+        $searchName = $request->input("name");
         $searchUserId = (int) $request->input("user_id");
-        $searchArtistId = (int) $request->input("user_id");
-        $searchNoOfChords = (int) $request->input("no_of_chords");
-        $searchChords = trim((string) $request->input("no_of_chords", ""));
+        $searchArtistId = (int) $request->input("artist_id");
+        $searchNoOfChords = $request->input("no_of_chords");
+        $searchChords = $request->input("chords");
 
-        $tabs = Tab::query()->where('is_active', true);
-        if ("" !== $search) {
-            $tabs = $tabs->where(function (Builder $query) use ($search) {
-                $query->whereFullText("name", $search);
-                // $query->orWhere("username", "LIKE", "%" . $search . "%");
+        /** @var Builder $tabs*/
+        $tabs = Tab::onlyActive();
+        if (null !== $searchName) {
+            $tabs = $tabs->where(function (Builder $query) use ($searchName) {
+                $query->whereFullText(Tab::COLUMN_NAME, $searchName);
+                $query->orWhereFullText(Tab::COLUMN_TEXT, $searchName);
             });    
+        }
+        if (0 !== $searchUserId) {
+            $tabs = $tabs->where(Tab::COLUMN_USER_ID, $searchUserId);    
+        }
+        if (0 !== $searchArtistId) {
+            $tabs = $tabs->where(Tab::COLUMN_ARTIST_ID, $searchArtistId);    
+        }
+        if (null !== $searchNoOfChords) {
+            $tabs = $tabs->where(Tab::COLUMN_NO_OF_CHORDS, $searchNoOfChords);    
         }
         $tabs = $tabs->get();
 
         $chords = [];
+        /** @var Tab[] $tabs*/
         foreach ($tabs as $tab) {
-            foreach ($tab->chords as $chord) {
-                $chords[] = $chord['chord'];
+            foreach ($tab->getChords() as $chord) {
+                $chords[] = $chord->getChord();
             }
         }
         $chords = array_unique($chords);
+
+        $artists = Artist::onlyActive()->get();
+        $users = User::onlyActive()->get();
 
         return view(
             'tabs.index', 
             compact(
                 'tabs', 
                 'chords', 
-                'search',
+                'artists',
+                'users',
                 'searchName',
                 'searchUserId',
                 'searchArtistId',
@@ -75,21 +91,14 @@ class TabController extends Controller
      */
     public function store(StoreTabRequest $request, ChordService $chordService)
     {
+        /** @var Tab $tab */
         $tab = Tab::query()->create($request->validated());
 
-        $push = false;
-        if (null !== $tab->artist_id) {
-            $tab->artist->no_of_tabs++;
-
-            $push = true;
+        if (null !== $tab->getArtistId() && $tab->isActive()) {
+            $tab->getArtist()->increaseNoOfTabs();
         }
-        if (null !== $tab->user_id) {
-            $tab->user->no_of_tabs++;
-
-            $push = true;
-        }
-        if ($push) {
-            $tab->push();
+        if (null !== $tab->getUserId() && $tab->isActive()) {
+            $tab->getUser()->increaseNoOfTabs();
         }
 
         $chordService->assignChordsToTab($tab);
@@ -104,29 +113,19 @@ class TabController extends Controller
      */
     public function show(Tab $tab)
     {
-        $tab->no_of_views++;
-		$tab->save();
+        $tab->increaseNoOfViews();
 
-        $push = false;
-        if (null !== $tab->artist_id) {
-            $tab->artist->no_of_views++;
-
-            $push = true;
+        if (null !== $tab->getArtistId()) {
+            $tab->getArtist()->increaseNoOfViews();
         }
-        if (null !== $tab->user_id) {
-		    $tab->user->no_of_views++;		
-		    
-            $push = true;
-        }
-        if ($push) {
-            $tab->push();
+        if (null !== $tab->getUserId()) {
+		    $tab->getUser()->increaseNoOfViews();		
         }
         
-        if (null !== $tab->text) {
-            $chords = $tab->chords()->get()->toArray();
-            if ([] !== $chords) {
-                $tab->text = ChordHelper::showChords($tab->text, $chords);
-            }
+        if (null !== $tab->getText() && $tab->getChords()->count() > 0) {
+            $tab->setText(
+                ChordHelper::showChords($tab->getText(),  $tab->getChords())
+            );
         }
 
         return view('tabs.show', compact('tab'));
@@ -147,24 +146,17 @@ class TabController extends Controller
      */
     public function update(UpdateTabRequest $request, Tab $tab, ChordService $chordService)
     {
-        $oldText = $tab->text;
-        $oldArtistId = (int) $tab->artist_id;
+        $oldText = $tab->getText();
+        $oldArtistId = $tab->getArtistId();
         
-        if (
-            $oldArtistId !== (int) $request->validated('artist_id')
-            && $tab->artist->no_of_tabs > 0
-        ) {
-            $tab->artist->no_of_tabs--;
-
-            $tab->push();
+        if ($tab->isActive() && $oldArtistId !== (int) $request->validated('artist_id')) {
+            $tab->getArtist()->decreaseNoOfTabs();
         }
 
         $tab->update($request->validated());
 
-        if ($oldArtistId !== (int) $request->validated('artist_id')) {
-            $tab->artist->no_of_tabs++;
-        
-            $tab->push();
+        if ($tab->isActive() && $oldArtistId !== (int) $request->validated('artist_id')) {
+            $tab->getArtist()->increaseNoOfTabs();
         }
 
         if ($oldText !== $request->validated('text')) {
@@ -181,40 +173,22 @@ class TabController extends Controller
      */
     public function destroy(Tab $tab)
     {
-        $push = false;
-
-        if (
-            null !== $tab->artist_id
-            && $tab->artist->no_of_tabs > 0
-        ) {
-            $tab->artist->no_of_tabs--;
-
-            $push = true;
+        if ($tab->isActive() && null !== $tab->getArtistId()) {
+            $tab->getArtist()->decreaseNoOfTabs();
         }
         
-        if (
-            null !== $tab->user_id
-            && $tab->user->no_of_tabs > 0
-        ) {
-            $tab->user->no_of_tabs--;
-            
-            $push = true;
+        if ($tab->isActive() && null !== $tab->getUserId()) {
+            $tab->getUser()->decreaseNoOfTabs();
         }
 
-        if ($tab->chords->count() > 0) {
-            foreach ($tab->chords as $chord) {
-                if ($chord->no_of_tabs > 0) {
-                    $chord->no_of_tabs--;
+        if ($tab->getChords()->count() > 0) {
+            if ($tab->isActive()) {
+                foreach ($tab->getChords() as $chord) {
+                    $chord->decreaseNoOfTabs();
                 }
             }
-            
-            $push = true;
 
-            ChordTab::query()->where('tab_id', $tab->id)->delete();
-        }
-
-        if ($push) {
-            $tab->push();
+            ChordTab::query()->where(ChordTab::COLUMN_TAB_ID, $tab->getId())->delete();
         }
 
         $tab->delete();

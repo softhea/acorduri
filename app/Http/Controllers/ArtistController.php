@@ -9,21 +9,25 @@ use App\Http\Requests\StoreArtistRequest;
 use App\Http\Requests\UpdateArtistRequest;
 use App\Models\Tab;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class ArtistController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
-        $search = trim((string) $request->input("search", ""));
+        $search = $request->input("search");
 
-        $artists = Artist::query()->where('is_active', true);
-        if ("" !== $search) {
-            $artists = $artists->where("name", "LIKE", "%" . $search . "%");    
+        /** @var Builder $artists */
+        $artists = Artist::onlyActive();
+        if (null !== $search) {
+            $artists = $artists->whereFullText(Artist::COLUMN_NAME, $search);    
         }
         $artists = $artists->get();
 
@@ -33,7 +37,7 @@ class ArtistController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(): View
     {
         return view('artists.create_update');
     }
@@ -41,9 +45,14 @@ class ArtistController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreArtistRequest $request)
+    public function store(StoreArtistRequest $request): RedirectResponse
     {
-        Artist::query()->create($request->validated());
+        /** @var Artist $artist */
+        $artist = Artist::query()->create($request->validated());
+
+        if (null !== $artist->getUserId() && $artist->isActive()) {
+            $artist->getUser()->increaseNoOfArtists();
+        }
 
         return redirect()
             ->route('artists.index')
@@ -53,7 +62,7 @@ class ArtistController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Artist $artist)
+    public function show(Artist $artist): View
     {
         return view('artists.show', compact('artist'));
     }
@@ -61,7 +70,7 @@ class ArtistController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Artist $artist)
+    public function edit(Artist $artist): View
     {
         return view('artists.create_update', compact('artist'));
     }
@@ -69,7 +78,7 @@ class ArtistController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateArtistRequest $request, Artist $artist)
+    public function update(UpdateArtistRequest $request, Artist $artist): RedirectResponse
     {
         $artist->update($request->validated());
 
@@ -81,18 +90,18 @@ class ArtistController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Artist $artist)
+    public function destroy(Artist $artist): RedirectResponse
     {
         Tab::query()
-            ->where('artist_id', $artist->id)
-            ->update(['artist_id' => null]);
+            ->where(Tab::COLUMN_ARTIST_ID, $artist->getId())
+            ->update([Tab::COLUMN_ARTIST_ID => null]);
 
-        /** @var User $loggedUser */
-        $loggedUser = Auth::user();
-
-        $loggedUser->no_of_artists--;
-        $loggedUser->save();
-
+        if ($artist->isActive()) {
+            /** @var User $loggedUser */
+            $loggedUser = Auth::user();
+            $loggedUser->decreaseNoOfArtists();
+        }
+        
         $artist->delete();
 
         return redirect()

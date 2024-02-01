@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Artist;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -23,9 +24,10 @@ class UpdateArtistRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => [
+            Artist::COLUMN_NAME => [
                 'required', 
-                Rule::unique('artists', 'name')->ignore($this->route('artist')),
+                Rule::unique(Artist::TABLE, Artist::COLUMN_NAME)
+                    ->ignore($this->route('artist')),
             ],
         ];
     }

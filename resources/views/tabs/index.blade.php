@@ -13,15 +13,6 @@
 	<a href="{{ route('tabs.create') }}" class="btn btn-primary">{{ __('Adauga') }}</a>
 @endif
 
-<form class="form-inline mt-2" action="" method="GET">
-	<div class="row">
-		<div class="form-group col-11">
-			<input type="text" class="form-control" name="search" value="<?=$search?>">
-		</div>
-		<button type="submit" class="btn btn-primary col-1">{{ __('Cauta') }}</button>
-	</div>
-</form>
-
 @foreach ($chords as $chord)
 	<div id="chord_{{ $chord }}" style="position: absolute; top: 0; left: 0; width: 136px; height: 173px; z-index: 9999; display: none;">
 		<img src="{{ URL('images/chords/chord_' . $chord . '.jpg') }}" />
@@ -41,10 +32,32 @@
 		<tr>
 			<form action="" method="GET">
 				<th><input type="text" name="name" class="form-control" value="<?=$searchName?>"></th>
-				<th><input type="text" name="artist_id" class="form-control" value="<?=$searchArtistId?>"></th>
-				<th><input type="text" name="user_id" class="form-control" value="<?=$searchUserId?>"></th>
+				<th>
+					<select name="artist_id" class="form-control">
+						<option value="">Selecteaza</option>
+						@foreach ($artists as $artist) 
+							<option value="{{ $artist->id }}"
+								@if ($searchArtistId === $artist->id) selected @endif
+							>
+								{{ $artist->name }}
+							</option>
+						@endforeach
+					</select>
+				</th>
+				<th>
+					<select name="user_id" class="form-control">
+						<option value="">Selecteaza</option>
+						@foreach ($users as $user) 
+							<option value="{{ $user->id }}"
+								@if ($searchUserId === $user->id) selected @endif
+							>
+								{{ $user->username }}
+							</option>
+						@endforeach
+					</select>
+				</th>
 				<th><input type="text" name="chords" class="form-control" value="<?=$searchChords?>"></th>
-				<th><input type="text" name="no_of_chords" id="search_no_of_chords" class="form-control" value="<?=$searchNoOfChords?>"></th>      
+				<th><input type="number" name="no_of_chords" id="search_no_of_chords" class="form-control" value="<?=$searchNoOfChords?>"></th>      
 				<th><button class="btn btn-success" type="submit">{{ __('Cauta') }}</button></th>
 			</form>
     	</tr>

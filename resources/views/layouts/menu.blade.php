@@ -1,10 +1,7 @@
-<?php
-
-use Illuminate\Support\Facades\Auth;
-?>
+<?php use Illuminate\Support\Facades\Auth; ?>
 <nav class="navbar navbar-expand-lg bg-body-tertiary bg-dark border-bottom border-bottom-dark" data-bs-theme="dark">
   <div class="container-fluid">
-    <a class="navbar-brand" href="#">Acorduri De Chitara</a>
+    <a class="navbar-brand" href="#">{{ __('Acorduri De Chitara') }}</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -19,14 +16,14 @@ use Illuminate\Support\Facades\Auth;
         </li>
         <li class="nav-item">
           <a class="nav-link 
-            @if (request()->routeIs('tabs.index') || request()->routeIs('tabs.show')) 
+            @if (request()->routeIs('tabs.index') || request()->routeIs('tabs.show') || request()->routeIs('tabs.create')) 
               active
             @endif" 
             href="{{ route('tabs.index') }}">{{ __('Tabulaturi') }}</a>
         </li>
         <li class="nav-item">
           <a class="nav-link 
-            @if (request()->routeIs('artists.index') || request()->routeIs('artists.show')) 
+            @if (request()->routeIs('artists.index') || request()->routeIs('artists.show') || request()->routeIs('artists.create'))
               active 
             @endif" 
             href="{{ route('artists.index') }}">{{ __('Artisti') }}</a>
@@ -52,11 +49,11 @@ use Illuminate\Support\Facades\Auth;
       </span>
       <form method="POST" action="{{ route('logout') }}" class="form-inline ms-2">
           @csrf
-          <button class="btn btn-secondary" type="submit">Logout</button>
+          <button class="btn btn-secondary" type="submit">{{ __('Logout') }}</button>
       </form>
       @endauth
       @guest
-      <a class="btn btn-secondary" href="{{ route('login') }}">Login</a>
+        <a class="btn btn-secondary" href="{{ route('login') }}">{{ __('Login') }}</a>
       @endguest
     </div>
   </div>
