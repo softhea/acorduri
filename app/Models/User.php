@@ -24,9 +24,7 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    // public const ROLE_ID_SUPERADMIN = 1;
     public const ROLE_ID_ADMIN = 2;
-    // public const ROLE_ID_USER = 3;
 
     public const COLUMN_NAME = 'name';
     public const COLUMN_USERNAME = 'username';

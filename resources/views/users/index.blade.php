@@ -4,16 +4,6 @@
 
 <h1>{{ __('Utilizatori') }}</h1>
 
-@if ($errors->any())
-    <div class="alert alert-danger mt-5">
-        <ul>
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
-
 <form class="form-inline mt-2" action="" method="GET">
 	<div class="row">
 		<div class="form-group col-11">

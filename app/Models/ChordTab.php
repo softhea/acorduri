@@ -20,19 +20,9 @@ class ChordTab extends Model
 
     protected $table = 'chord_tab';
 
-    public function getChordId(): ?int
-    {
-        return $this->chord_id;
-    }
-
     public function setChordId(int $chordId): void
     {
         $this->chord_id = $chordId;
-    }
-
-    public function getTabId(): ?int
-    {
-        return $this->tab_id;
     }
 
     public function setTabId(int $tabId): void

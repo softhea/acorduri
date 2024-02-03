@@ -109,7 +109,7 @@
 				@if (Auth::check() && Auth::user()->id === $tab->user_id)
 					<td>
 						<div class="btn-group" role="group">
-							<a href="{{ route('tabs.edit', ['tab' => $tab->id]) }}" class="btn btn-warning">Modifica</a>
+							<a href="{{ route('tabs.edit', ['tab' => $tab->id]) }}" class="btn btn-warning">{{ __('Modifica') }}</a>
 							<form class="btn btn-danger p-0" method="POST" 
 									action="{{ route('tabs.destroy', ['tab' => $tab->id]) }}">
 								@csrf
