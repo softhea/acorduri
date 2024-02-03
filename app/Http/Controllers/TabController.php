@@ -10,10 +10,14 @@ use App\Models\ChordTab;
 use App\Models\Tab;
 use App\Http\Requests\StoreTabRequest;
 use App\Http\Requests\UpdateTabRequest;
+use App\Models\Chord;
 use App\Models\User;
 use App\Services\ChordService;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class TabController extends Controller
@@ -24,41 +28,49 @@ class TabController extends Controller
     public function index(Request $request): View
     {
         $searchName = $request->input("name");
-        $searchUserId = (int) $request->input("user_id");
-        $searchArtistId = (int) $request->input("artist_id");
+        $searchUserId = $request->input("user_id");
+        $searchArtistId = $request->input("artist_id");
         $searchNoOfChords = $request->input("no_of_chords");
-        $searchChords = $request->input("chords");
+        $searchChordIds = $request->input("chord_ids");
 
         /** @var Builder $tabs*/
-        $tabs = Tab::onlyActive();
+        $tabs = Tab::onlyActive()->with('user', 'artist', 'chords');
         if (null !== $searchName) {
             $tabs = $tabs->where(function (Builder $query) use ($searchName) {
                 $query->whereFullText(Tab::COLUMN_NAME, $searchName);
                 $query->orWhereFullText(Tab::COLUMN_TEXT, $searchName);
             });    
         }
-        if (0 !== $searchUserId) {
+        if (null !== $searchUserId) {
             $tabs = $tabs->where(Tab::COLUMN_USER_ID, $searchUserId);    
         }
-        if (0 !== $searchArtistId) {
+        if (null !== $searchArtistId) {
             $tabs = $tabs->where(Tab::COLUMN_ARTIST_ID, $searchArtistId);    
         }
         if (null !== $searchNoOfChords) {
             $tabs = $tabs->where(Tab::COLUMN_NO_OF_CHORDS, $searchNoOfChords);    
         }
-        $tabs = $tabs->get();
+        if (null !== $searchChordIds) {
+            foreach ($searchChordIds as $chordId) {
+                $tabs = $tabs->whereHas('chords', function (Builder $query) use ($chordId) {
+                    $query->where(ChordTab::COLUMN_CHORD_ID, $chordId);
+                });
+            }
+        }
+        $tabs = $tabs->orderBy(Tab::COLUMN_NAME)->get();
 
         $chords = [];
+        $chords = new Collection();
         /** @var Tab[] $tabs*/
         foreach ($tabs as $tab) {
             foreach ($tab->getChords() as $chord) {
-                $chords[] = $chord->getChord();
+                $chords->push($chord);
             }
         }
-        $chords = array_unique($chords);
+        $chords = $chords->unique()->sortBy(Chord::COLUMN_CHORD);
 
-        $artists = Artist::onlyActive()->get();
-        $users = User::onlyActive()->get();
+        $artists = Artist::onlyActive()->orderBy(Artist::COLUMN_NAME)->get();
+        $users = User::onlyActive()->orderBy(User::COLUMN_USERNAME)->get();
 
         return view(
             'tabs.index', 
@@ -71,7 +83,7 @@ class TabController extends Controller
                 'searchUserId',
                 'searchArtistId',
                 'searchNoOfChords',
-                'searchChords'
+                'searchChordIds'
             )
         );
     }

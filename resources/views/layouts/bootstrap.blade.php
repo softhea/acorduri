@@ -15,11 +15,9 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
         
         @section('scripts')
-        <script>
-        
-        </script>
+        <!-- https://github.com/admirhodzic/multiselect-dropdown -->
+        <script src="{{ asset('js/multiselect-dropdown.js')}}"></script>
         <script src="{{ asset('js/general.js')}}"></script>
-
         @show
     </body>
 </html>

@@ -1,6 +1,7 @@
 @extends('layouts.bootstrap')
 
 @section('content')
+
 <h1>{{ __('Tabulaturi') }}</h1>
 
 @if (Session::has('message'))
@@ -14,8 +15,8 @@
 @endif
 
 @foreach ($chords as $chord)
-	<div id="chord_{{ $chord }}" style="position: absolute; top: 0; left: 0; width: 136px; height: 173px; z-index: 9999; display: none;">
-		<img src="{{ URL('images/chords/chord_' . $chord . '.jpg') }}" />
+	<div id="chord_{{ $chord->getChord() }}" style="position: absolute; top: 0; left: 0; width: 136px; height: 173px; z-index: 9999; display: none;">
+		<img src="{{ URL('images/chords/chord_' . $chord->getChord() . '.jpg') }}" />
 	</div>
 @endforeach
 
@@ -34,10 +35,10 @@
 				<th><input type="text" name="name" class="form-control" value="<?=$searchName?>"></th>
 				<th>
 					<select name="artist_id" class="form-control">
-						<option value="">Selecteaza</option>
+						<option value="">{{ __('Selecteaza') }}</option>
 						@foreach ($artists as $artist) 
 							<option value="{{ $artist->id }}"
-								@if ($searchArtistId === $artist->id) selected @endif
+								@if ((int) $searchArtistId === $artist->id) selected @endif
 							>
 								{{ $artist->name }}
 							</option>
@@ -46,17 +47,29 @@
 				</th>
 				<th>
 					<select name="user_id" class="form-control">
-						<option value="">Selecteaza</option>
+						<option value="">{{ __('Selecteaza') }}</option>
 						@foreach ($users as $user) 
 							<option value="{{ $user->id }}"
-								@if ($searchUserId === $user->id) selected @endif
+								@if ((int) $searchUserId === $user->id) selected @endif
 							>
 								{{ $user->username }}
 							</option>
 						@endforeach
 					</select>
 				</th>
-				<th><input type="text" name="chords" class="form-control" value="<?=$searchChords?>"></th>
+				<th>
+					<select multiple name="chord_ids[]" id="chord_ids" class="form-control"
+						multiselect-search="true" 
+						multiselect-select-all="false" 
+						multiselect-hide-x = "false"
+					>
+						@foreach ($chords as $chord)
+							<option value="{{ $chord->getId() }}"
+								@if (null !== $searchChordIds && in_array($chord->getId(), $searchChordIds)) selected @endif
+							>{{ $chord->getChord() }}</option>
+						@endforeach
+					</select>
+				</th>
 				<th><input type="number" name="no_of_chords" id="search_no_of_chords" class="form-control" value="<?=$searchNoOfChords?>"></th>      
 				<th><button class="btn btn-success" type="submit">{{ __('Cauta') }}</button></th>
 			</form>

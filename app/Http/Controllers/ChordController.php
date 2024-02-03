@@ -11,7 +11,7 @@ class ChordController extends Controller
 {
     public function index(): View
     {
-        $chords = Chord::all();
+        $chords = Chord::query()->orderBy(Chord::COLUMN_CHORD)->get();
 
         return view('chords.index', compact('chords'));
     }

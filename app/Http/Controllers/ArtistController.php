@@ -29,7 +29,7 @@ class ArtistController extends Controller
         if (null !== $search) {
             $artists = $artists->whereFullText(Artist::COLUMN_NAME, $search);    
         }
-        $artists = $artists->get();
+        $artists = $artists->orderBy(Artist::COLUMN_NAME)->get();
 
         return view('artists.index', compact('artists', 'search'));
     }

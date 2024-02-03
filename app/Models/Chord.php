@@ -17,6 +17,8 @@ class Chord extends Model
 {
     use HasFactory;
 
+    public const COLUMN_CHORD = "chord";
+
     public function getId(): int
     {
         return $this->id;

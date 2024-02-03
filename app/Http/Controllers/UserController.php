@@ -16,13 +16,13 @@ class UserController extends Controller
 
         /** @var Builder $users */
         $users = User::onlyActive();
-        if ("" !== $search) {
+        if (null !== $search) {
             $users = $users->where(function (Builder $query) use ($search) {
                 $query->where(User::COLUMN_NAME, "LIKE", "%" . $search . "%");
                 $query->orWhere(User::COLUMN_USERNAME, "LIKE", "%" . $search . "%");
             });    
         }
-        $users = $users->get();
+        $users = $users->orderBy(User::COLUMN_USERNAME)->get();
 
         return view('users.index', compact('users', 'search'));
     }

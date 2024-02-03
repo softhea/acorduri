@@ -1,6 +1,7 @@
 @extends('layouts.bootstrap')
 
 @section('content')
+
 <h1>{{ __('Utilizatori') }}</h1>
 
 @if ($errors->any())
@@ -21,7 +22,6 @@
 		<button type="submit" class="btn btn-primary col-1">{{ __('Cauta') }}</button>
 	</div>
 </form>
-
 <table class="table table-striped mt-2">
 	<thead>
 		<tr>
@@ -45,10 +45,4 @@
 	</tbody>
 </table>
 
-@endsection
-
-@section('scripts')
-<scripts>
-
-</scripts>
 @endsection
