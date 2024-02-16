@@ -31,8 +31,7 @@ class TabController extends Controller
         $searchNoOfChords = $request->input("no_of_chords");
         $searchChordIds = $request->input("chord_ids");
 
-        /** @var Builder $tabs*/
-        $tabs = Tab::onlyActive()->with('user', 'artist', 'chords');
+        $tabs = Tab::query()->with('user', 'artist', 'chords');
         if (null !== $searchName) {
             $tabs = $tabs->where(function (Builder $query) use ($searchName) {
                 $query->whereFullText(Tab::COLUMN_NAME, $searchName);
@@ -67,8 +66,8 @@ class TabController extends Controller
         }
         $chords = $chords->unique()->sortBy(Chord::COLUMN_CHORD);
 
-        $artists = Artist::onlyActive()->orderBy(Artist::COLUMN_NAME)->get();
-        $users = User::onlyActive()->orderBy(User::COLUMN_USERNAME)->get();
+        $artists = Artist::query()->orderBy(Artist::COLUMN_NAME)->get();
+        $users = User::query()->orderBy(User::COLUMN_USERNAME)->get();
 
         return view(
             'tabs.index', 
@@ -91,7 +90,7 @@ class TabController extends Controller
      */
     public function create()
     {
-        $artists = Artist::all();
+        $artists = Artist::query()->orderBy(Artist::COLUMN_NAME)->get();
 
         return view('tabs.create_update', compact('artists'));
     }
@@ -104,10 +103,10 @@ class TabController extends Controller
         /** @var Tab $tab */
         $tab = Tab::query()->create($request->validated());
 
-        if (null !== $tab->getArtistId() && $tab->isActive()) {
+        if (null !== $tab->getArtistId()) {
             $tab->getArtist()->increaseNoOfTabs();
         }
-        if (null !== $tab->getUserId() && $tab->isActive()) {
+        if (null !== $tab->getUserId()) {
             $tab->getUser()->increaseNoOfTabs();
         }
 
@@ -115,7 +114,7 @@ class TabController extends Controller
 
         return redirect()
             ->route('tabs.index')
-            ->with("message", __("Tabulatura a fost adaugata cu succes"));
+            ->with("message", __("The Tab has been successfully created"));
     }
 
     /**
@@ -146,7 +145,7 @@ class TabController extends Controller
      */
     public function edit(Tab $tab)
     {
-        $artists = Artist::all();
+        $artists = Artist::query()->orderBy(Artist::COLUMN_NAME)->get();
 
         return view('tabs.create_update', compact('tab','artists'));
     }
@@ -159,23 +158,29 @@ class TabController extends Controller
         $oldText = $tab->getText();
         $oldArtistId = $tab->getArtistId();
         
-        if ($tab->isActive() && $oldArtistId !== (int) $request->validated('artist_id')) {
+        if (
+            null !== $oldArtistId 
+            && $oldArtistId !== (int) $request->validated('artist_id')
+        ) {
             $tab->getArtist()->decreaseNoOfTabs();
         }
 
         $tab->update($request->validated());
 
-        if ($tab->isActive() && $oldArtistId !== (int) $request->validated('artist_id')) {
+        if (
+            null !== $tab->getArtistId() 
+            && $oldArtistId !== $tab->getArtistId()
+        ) {
             $tab->getArtist()->increaseNoOfTabs();
         }
 
-        if ($oldText !== $request->validated('text')) {
+        if ($oldText !== $tab->getText()) {
             $chordService->assignChordsToTab($tab, $oldText);
         }
         
         return redirect()
             ->route('tabs.index')
-            ->with("message", __("Tabulatura a fost modificata cu succes"));
+            ->with("message", __("The Tab has been successfully updated"));
     }
 
     /**
@@ -183,28 +188,28 @@ class TabController extends Controller
      */
     public function destroy(Tab $tab)
     {
-        if ($tab->isActive() && null !== $tab->getArtistId()) {
+        if (null !== $tab->getArtistId()) {
             $tab->getArtist()->decreaseNoOfTabs();
         }
         
-        if ($tab->isActive() && null !== $tab->getUserId()) {
+        if (null !== $tab->getUserId()) {
             $tab->getUser()->decreaseNoOfTabs();
         }
 
         if ($tab->getChords()->count() > 0) {
-            if ($tab->isActive()) {
-                foreach ($tab->getChords() as $chord) {
-                    $chord->decreaseNoOfTabs();
-                }
+            foreach ($tab->getChords() as $chord) {
+                $chord->decreaseNoOfTabs();
             }
-
-            ChordTab::query()->where(ChordTab::COLUMN_TAB_ID, $tab->getId())->delete();
+            
+            ChordTab::query()
+                ->where(ChordTab::COLUMN_TAB_ID, $tab->getId())
+                ->delete();
         }
 
         $tab->delete();
 
         return redirect()
             ->route('tabs.index')
-            ->with("message", __("Tabulatura a fost stearsa cu succes"));
+            ->with("message", __("The Tab has been successfully deleted"));
     }
 }

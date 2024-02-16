@@ -2,12 +2,11 @@
 
 @section('content')
 
-<h1>{{ __('Utilizator') }}: {{ $user->username }}</h1>
+<h1>{{ __('User') }}: {{ $user->getUsername() }}</h1>
 
-<h4>{{ __('Nume') }}: {{ $user->name }}</h4>
-<p>{{ __('Numar de tabulaturi') }}: {{ $user->no_of_tabs }}</p>
-<p>{{ __('Numar de artisti') }}: {{ $user->no_of_artists }}</p>
-<p>{{ __('Numar de acorduri') }}: {{ $user->no_of_chords }}</p>
-<p>{{ __('Vizualizari') }}: {{ $user->no_of_views }}</p>
+<h4>{{ __('Name') }}: {{ $user->getName() }}</h4>
+<p>{{ __('No of tabs') }}: {{ $user->getNoOfTabs() }}</p>
+<p>{{ __('No of artists') }}: {{ $user->getNoOfArtists() }}</p>
+<p>{{ __('No of views') }}: {{ $user->getNoOfViews() }}</p>
 
 @endsection

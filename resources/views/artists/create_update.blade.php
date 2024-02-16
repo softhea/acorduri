@@ -16,7 +16,7 @@
         @if (request()->routeIs('artists.create'))
             action="{{ route('artists.store') }}"
         @else
-            action="{{ route('artists.update', ['artist' => $artist->id]) }}"
+            action="{{ route('artists.update', ['artist' => $artist->getId()]) }}"
         @endif
 >
     @csrf
@@ -26,17 +26,17 @@
     <div class="form-group">
         <label for="artist">{{ __('Artist') }}</label>
         <input type="text" class="form-control" name="name" aria-describedby="nameHelp" 
-            value="{{ old('name') ?? (isset($artist) ? $artist->name : '') }}"
+            value="{{ old('name') ?? (isset($artist) ? $artist->getName() : '') }}"
         >
         <small id="nameHelp" class="form-text text-muted">
-            {{ __('Numele artistului trebuie sa fie unic') }}
+            {{ __('Name should be unique') }}
         </small>
     </div>
     <button type="submit" class="btn btn-primary mt-3">
         @if (request()->routeIs('artists.create'))
-            {{ __('Adauga') }}
+            {{ __('Create') }}
         @else
-            {{ __('Modifica') }}
+            {{ __('Update') }}
         @endif
     </button>
 </form>

@@ -20,10 +20,8 @@ class TabFactory extends Factory
             'user_id' => fake()->numberBetween(3, 10),
             'artist_id' => fake()->numberBetween(1, 20),
             'name' => fake()->name(),
-            'text' => fake()->text(),
-            'no_of_chords' => fake()->numberBetween(1, 7),
+            'no_of_chords' => fake()->numberBetween(0, 6),
             'no_of_views' => fake()->numberBetween(0, 2000),
-            'is_active' => fake()->boolean(75),
         ];
     }
 }

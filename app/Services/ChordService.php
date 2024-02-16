@@ -52,9 +52,7 @@ class ChordService
 					$chordTab->setChordId($chord->getId());
 					$chordTab->save();
 
-                    if ($tab->isActive()) {
-                        $chord->increaseNoOfTabs();
-                    }
+                    $chord->increaseNoOfTabs();
 				}
 				$noOfChords++;
 			} elseif (
@@ -66,9 +64,7 @@ class ChordService
                     ->where(ChordTab::COLUMN_CHORD_ID, $chord->getId())
                     ->delete();
 
-                if ($tab->isActive()) {
-                    $chord->decreaseNoOfTabs();
-                }
+                $chord->decreaseNoOfTabs();
 			}
 		}
 

@@ -14,7 +14,7 @@ class ChordSeeder extends Seeder
     public function run(): void
     {
         $chords = [
-            'A', 'Am', 'B', 'Bb', 'C', 'D', 'Dm', 'E', 'Em', 'E7', 'F', 'F#', 'G',
+            'A', 'Am', 'B7', 'C', 'D', 'E', 'Em', 'F', 'G',
         ];
 
         foreach ($chords as $chord) {
@@ -22,6 +22,5 @@ class ChordSeeder extends Seeder
                 'chord' => $chord,
             ]);
         }
-        
     }
 }

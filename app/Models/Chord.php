@@ -29,6 +29,16 @@ class Chord extends Model
         return $this->chord;
     }
 
+    public function getNoOfChords(): int
+    {
+        return $this->no_of_chords;
+    }
+
+    public function getNoOfTabs(): int
+    {
+        return $this->no_of_tabs;
+    }
+
     public function increaseNoOfTabs(): void
     {
         $this->no_of_tabs++;

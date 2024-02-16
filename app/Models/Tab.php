@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -17,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property ?int $artist_id
  * @property int $no_of_chords
  * @property int $no_of_views
- * @property bool $is_active
+ * @property ?string $name
  * @property ?string $text
  * @property ?User $user
  * @property ?Artist $artist
@@ -29,6 +28,7 @@ class Tab extends Model
 
     public const TABLE = 'tabs';
 
+    public const PRIMARY_KEY = 'id';
     public const COLUMN_USER_ID = 'user_id';
     public const COLUMN_ARTIST_ID = 'artist_id';
     public const COLUMN_NAME = 'name';
@@ -41,7 +41,6 @@ class Tab extends Model
         self::COLUMN_ARTIST_ID,
         self::COLUMN_NAME,
         self::COLUMN_TEXT,
-        self::COLUMN_IS_ACTIVE,
     ];
 
     public function user(): BelongsTo
@@ -58,16 +57,6 @@ class Tab extends Model
     {
         return $this->belongsToMany(Chord::class);
     }	
-
-    public function scopeOnlyActive(Builder $query): Builder
-    {
-        return $query->where(self::COLUMN_IS_ACTIVE, true);
-    }
-
-    public function isActive(): bool
-    {
-        return (bool) $this->is_active;
-    }
 
     /** @return Collection<int, Chord> */
     public function getChords(): Collection
@@ -92,12 +81,17 @@ class Tab extends Model
 
     public function getUserId(): ?int
     {
-        return $this->user_id;
+        return null !== $this->user_id ? (int) $this->user_id : null;
     }
 
     public function getArtistId(): ?int
     {
-        return $this->artist_id;
+        return null !== $this->artist_id ? (int) $this->artist_id : null;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
     }
 
     public function getText(): ?string
@@ -120,5 +114,15 @@ class Tab extends Model
     {
         $this->no_of_chords = $noOfChords;
         $this->save();
+    }
+
+    public function getNoOfChords(): int
+    {
+        return $this->no_of_chords;
+    }
+
+    public function getNoOfViews(): int
+    {
+        return $this->no_of_views;
     }
 }

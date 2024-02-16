@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests;
 
 use App\Models\Artist;
@@ -29,6 +31,19 @@ class UpdateArtistRequest extends FormRequest
                 Rule::unique(Artist::TABLE, Artist::COLUMN_NAME)
                     ->ignore($this->route('artist')),
             ],
+        ];
+    }
+
+    /**
+     * Get the error messages for the defined validation rules.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            Artist::COLUMN_NAME . '.required' => __('Name is required'),
+            Artist::COLUMN_NAME . '.unique' => __('Name already exists'),
         ];
     }
 }

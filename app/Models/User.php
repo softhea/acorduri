@@ -14,18 +14,24 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
+ * @property int $id;
  * @property int $no_of_artists;
  * @property int $no_of_tabs;
  * @property int $no_of_views;
+ * @property int $no_of_chords;
  * @property int $role_id;
+ * @property ?string $username;
+ * @property string $name;
  * @property ?DateTime $email_verified_at;
  */
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    public const TABLE = "users";
     public const ROLE_ID_ADMIN = 2;
 
+    public const PRIMARY_KEY = 'id';
     public const COLUMN_NAME = 'name';
     public const COLUMN_USERNAME = 'username';
     public const COLUMN_EMAIL_VERIFIED_AT = 'email_verified_at';
@@ -114,5 +120,35 @@ class User extends Authenticatable
     public function isActive(): bool
     {
         return null !== $this->email_verified_at;
+    }
+
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public function getUsername(): ?string
+    {
+        return $this->username;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getNoOfTabs(): int
+    {
+        return $this->no_of_tabs;
+    }
+
+    public function getNoOfArtists(): int
+    {
+        return $this->no_of_artists;
+    }
+
+    public function getNoOfViews(): int
+    {
+        return $this->no_of_views;
     }
 }

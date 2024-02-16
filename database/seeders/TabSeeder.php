@@ -17,7 +17,19 @@ class TabSeeder extends Seeder
         $chords = Chord::query()->get();
         
         Tab::factory(100)->create()->each(function (Tab $tab) use ($chords) {
-            $tab->chords()->saveMany($chords->random($tab->no_of_chords));
+            $chordsForThisTab = $chords->random($tab->getNoOfChords());
+            
+            $text = '';
+            /** @var Chord $chord */
+            foreach ($chordsForThisTab as $chord) {
+                $text .= '$' . $chord->getChord() . "\r\n";
+                $text .= fake()->text() . "\r\n";
+            }
+            $text .= fake()->text();
+
+            $tab->update([Tab::COLUMN_TEXT => $text]);
+
+            $tab->chords()->saveMany($chordsForThisTab);
         });
     }
 }

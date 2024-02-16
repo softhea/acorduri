@@ -3,12 +3,11 @@
 
 @section('content')
 
-<h1>Acorduri de chitara</h1>
+<h1>{{ __('Guitar Tabs') }}</h1>
 
-<h3>Bine ati venit!</h3>
+<h3>{{ __('Welcome!') }}</h3>
 
-<p>Acest site isi propune sa simplifice procesul de invatare a cantatului la chitara de catre incepatori</p>
-
-<p><i class="glyphicon glyphicon-ok"></i> Puteti cauta tabulaturi care contin doar acordurile pe care le stiti</p>
+<p>{{ __('This website wants to simplify the process of learning playing guitar by the beginners') }}</p>
+<p>{{ __('You can search tabs that have only the chords you know') }}</p>
 
 @endsection

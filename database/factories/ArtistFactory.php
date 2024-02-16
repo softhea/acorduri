@@ -21,7 +21,6 @@ class ArtistFactory extends Factory
             'name' => fake()->name(),
             'no_of_tabs' => fake()->numberBetween(0, 20),
             'no_of_views' => fake()->numberBetween(0, 2000),
-            'is_active' => fake()->boolean(75),
         ];
     }
 }

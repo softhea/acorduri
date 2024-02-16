@@ -22,19 +22,19 @@ Route::get('/', function () {
     return view('home');
 })->name('home');
 
-Route::resource('/tabulaturi', TabController::class)
-    ->names('tabs')
-    ->parameters(['tabulaturi' => 'tab']);
+Route::resource('/tabs', TabController::class);
+    //->names('tabs')
+    //->parameters(['tabulaturi' => 'tab']);
 
-Route::resource('/artisti', ArtistController::class)
-    ->names('artists')
-    ->parameters(['artisti' => 'artist']);
+Route::resource('/artists', ArtistController::class);
+    //->names('artists')
+    //->parameters(['artisti' => 'artist']);
 
-Route::get('/acorduri', [ChordController::class, 'index'])->name('chords.index');
-Route::get('/acorduri/{chord}', [ChordController::class, 'show'])->name('chords.show');
+Route::get('/chords', [ChordController::class, 'index'])->name('chords.index');
+Route::get('/chords/{chord}', [ChordController::class, 'show'])->name('chords.show');
 
-Route::get('/utilizatori', [UserController::class, 'index'])->name('users.index');
-Route::get('/utilizatori/{user}', [UserController::class, 'show'])->name('users.show');
+Route::get('/users', [UserController::class, 'index'])->name('users.index');
+Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
 
 Route::get('/dashboard', function () {
     return view('dashboard');

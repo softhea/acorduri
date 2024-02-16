@@ -17,7 +17,6 @@ return new class extends Migration
             $table->bigInteger('artist_id')->unsigned()->nullable()->index();
             $table->string('name', 50)->nullable()->fulltext();
             $table->text('text')->nullable()->fulltext();
-            $table->boolean('is_active')->nullable(false)->default(false)->index();
             $table->integer('no_of_views')->unsigned()->nullable(false)->default(0)->index();
             $table->integer('no_of_chords')->unsigned()->nullable(false)->default(0)->index();
             $table->timestamps();

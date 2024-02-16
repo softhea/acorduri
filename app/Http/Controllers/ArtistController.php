@@ -9,7 +9,6 @@ use App\Http\Requests\StoreArtistRequest;
 use App\Http\Requests\UpdateArtistRequest;
 use App\Models\Tab;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,8 +23,7 @@ class ArtistController extends Controller
     {
         $search = $request->input("search");
 
-        /** @var Builder $artists */
-        $artists = Artist::onlyActive();
+        $artists = Artist::query();
         if (null !== $search) {
             $artists = $artists->whereFullText(Artist::COLUMN_NAME, $search);    
         }
@@ -50,13 +48,13 @@ class ArtistController extends Controller
         /** @var Artist $artist */
         $artist = Artist::query()->create($request->validated());
 
-        if (null !== $artist->getUserId() && $artist->isActive()) {
+        if (null !== $artist->getUserId()) {
             $artist->getUser()->increaseNoOfArtists();
         }
 
         return redirect()
             ->route('artists.index')
-            ->with("message", __("Artistul a fost adaugat cu succes"));
+            ->with("message", __("The Artist has been successfully created"));
     }
 
     /**
@@ -84,7 +82,7 @@ class ArtistController extends Controller
 
         return redirect()
             ->route('artists.index')
-            ->with("message", __("Artistul a fost modificat cu succes"));
+            ->with("message", __("The Artist has been successfully updated"));
     }
 
     /**
@@ -96,16 +94,14 @@ class ArtistController extends Controller
             ->where(Tab::COLUMN_ARTIST_ID, $artist->getId())
             ->update([Tab::COLUMN_ARTIST_ID => null]);
 
-        if ($artist->isActive()) {
-            /** @var User $loggedUser */
-            $loggedUser = Auth::user();
-            $loggedUser->decreaseNoOfArtists();
-        }
+        /** @var User $loggedUser */
+        $loggedUser = Auth::user();
+        $loggedUser->decreaseNoOfArtists();
         
         $artist->delete();
 
         return redirect()
             ->route('artists.index')
-            ->with("message", __("Artistul a fost sters cu succes"));
+            ->with("message", __("The Artist has been successfully deleted"));
     }
 }

@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests;
 
 use App\Models\Artist;
 use App\Models\Tab;
+use App\Rules\UniqueTableNamePerArtistIdExceptId;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class UpdateTabRequest extends FormRequest
 {
@@ -25,19 +27,38 @@ class UpdateTabRequest extends FormRequest
     public function rules(): array
     {
         $exists = "";
+        $artistId = null;
         if (null !== $this->request->get('artist_id')) {
             $exists = "|exists:" . Artist::TABLE . "," . Artist::COLUMN_ID;
+            $artistId = (int) $this->request->get('artist_id');
         }
+
+        /** @var Tab $tab */
+        $tab = $this->route('tab');
 
         return [
             Tab::COLUMN_NAME => [
                 'required',
-                //todo per artist
-                Rule::unique(Tab::TABLE, Tab::COLUMN_NAME)
-                    ->ignore($this->route('tab')),
+                (new UniqueTableNamePerArtistIdExceptId)
+                    ->setId($tab->getId())
+                    ->setArtistId($artistId)
             ],
             Tab::COLUMN_ARTIST_ID => 'sometimes' . $exists,
             Tab::COLUMN_TEXT => 'required',
+        ];
+    }
+
+    /**
+     * Get the error messages for the defined validation rules.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            Tab::COLUMN_ARTIST_ID . '.exists' => __('Artist not found'),
+            Tab::COLUMN_NAME . '.required' => __('Name is required'),
+            Tab::COLUMN_TEXT . '.required' => __('Tab is required'),
         ];
     }
 }

@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->bigInteger('user_id')->unsigned()->nullable()->index();
             $table->string('name', 50)->nullable()->fulltext();
-            $table->boolean('is_active')->nullable(false)->default(false)->index();
             $table->integer('no_of_views')->unsigned()->nullable(false)->default(0)->index();
             $table->integer('no_of_tabs')->unsigned()->nullable(false)->default(0)->index();
             $table->timestamps();
