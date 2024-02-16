@@ -23,12 +23,7 @@ Route::get('/', function () {
 })->name('home');
 
 Route::resource('/tabs', TabController::class);
-    //->names('tabs')
-    //->parameters(['tabulaturi' => 'tab']);
-
 Route::resource('/artists', ArtistController::class);
-    //->names('artists')
-    //->parameters(['artisti' => 'artist']);
 
 Route::get('/chords', [ChordController::class, 'index'])->name('chords.index');
 Route::get('/chords/{chord}', [ChordController::class, 'show'])->name('chords.show');
