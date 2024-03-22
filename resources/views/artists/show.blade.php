@@ -6,7 +6,7 @@
 <p>
     {{ __('Added by user') }}:&nbsp;
     <a href="{{ route('users.show', ['user' => $artist->getUserId()]) }}">
-        {{ $artist->getUser()->getUsername() }}
+        {{ $artist->getUser()?->getUsername() }}
     </a>
 </p>
 <p>{{ __('No of tabs') }}: {{ $artist->getNoOfTabs() }}</p>

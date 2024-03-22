@@ -39,7 +39,7 @@
 				@if (
 					Auth::check() 
 					&& (
-						Auth::user()->getId() === $artist->getUserId()
+						Auth::id() === $artist->getUserId()
 						|| Auth::user()->isAdmin()
 					)
 				)
