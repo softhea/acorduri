@@ -56,7 +56,6 @@ class TabController extends Controller
         }
         $tabs = $tabs->orderBy(Tab::COLUMN_NAME)->get();
 
-        $chords = [];
         $chords = new Collection();
         /** @var Tab[] $tabs*/
         foreach ($tabs as $tab) {
@@ -106,9 +105,8 @@ class TabController extends Controller
         if (null !== $tab->getArtistId()) {
             $tab->getArtist()->increaseNoOfTabs();
         }
-        if (null !== $tab->getUserId()) {
-            $tab->getUser()->increaseNoOfTabs();
-        }
+      
+        $tab->getUser()->increaseNoOfTabs();
 
         $chordService->assignChordsToTab($tab);
 

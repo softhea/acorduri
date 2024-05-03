@@ -102,7 +102,7 @@
 					@endif					
 				</td>
 				<td>        
-					@if (count($tab->getChords()) > 0)
+					@if ($tab->getChords()->count() > 0)
 						@foreach ($tab->chords as $i => $chord)
 							<a href="{{ route('chords.show', ['chord' => $chord->getId()]) }}" 
 									class="chord" chord_id="chord_{{ $chord->chord }}">
